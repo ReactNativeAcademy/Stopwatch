@@ -1,220 +1,765 @@
-This project was bootstrapped with [Create React Native App](https://github.com/react-community/create-react-native-app).
+Application Design
+==================
 
-Below you'll find information about performing common tasks. The most recent version of this guide is available [here](https://github.com/react-community/create-react-native-app/blob/master/react-native-scripts/template/README.md).
+Hello Everyone and welcome to the React Native Academy! In this tutorial we will build the iOS Stopwatch application in React Native.
 
-## Table of Contents
+The app consists of three screens.
 
-* [Updating to New Releases](#updating-to-new-releases)
-* [Available Scripts](#available-scripts)
-  * [npm start](#npm-start)
-  * [npm test](#npm-test)
-  * [npm run ios](#npm-run-ios)
-  * [npm run android](#npm-run-android)
-  * [npm run eject](#npm-run-eject)
-* [Writing and Running Tests](#writing-and-running-tests)
-* [Environment Variables](#environment-variables)
-  * [Configuring Packager IP Address](#configuring-packager-ip-address)
-* [Adding Flow](#adding-flow)
-* [Customizing App Display Name and Icon](#customizing-app-display-name-and-icon)
-* [Sharing and Deployment](#sharing-and-deployment)
-  * [Publishing to Expo's React Native Community](#publishing-to-expos-react-native-community)
-  * [Building an Expo "standalone" app](#building-an-expo-standalone-app)
-  * [Ejecting from Create React Native App](#ejecting-from-create-react-native-app)
-    * [Build Dependencies (Xcode & Android Studio)](#build-dependencies-xcode-android-studio)
-    * [Should I Use ExpoKit?](#should-i-use-expokit)
-* [Troubleshooting](#troubleshooting)
-  * [Networking](#networking)
-  * [iOS Simulator won't open](#ios-simulator-wont-open)
-  * [QR Code does not scan](#qr-code-does-not-scan)
+On the initial screen you can see the timer set to zeroes and two buttons: the lap button and the start button. The lap button is disabled until you start the timer with the Start button.
 
-## Updating to New Releases
+Once it is running, I can press the lap button to measure the split times. When there are at least three laps, The slowest and the fastest intervals are highlighted. The current lap increases together with the main timer.
 
-You should only need to update the global installation of `create-react-native-app` very rarely, ideally never.
+When the stopwatch is running, you can stop it. From here you can resume or reset. Reset brings you back to the initial screen.
 
-Updating the `react-native-scripts` dependency of your app should be as simple as bumping the version number in `package.json` and reinstalling your project's dependencies.
+We will refer to these ddesigns during development to pick the colors and make sure that our app resembles the original iOS Stopwatch application.
 
-Upgrading to a new version of React Native requires updating the `react-native`, `react`, and `expo` package versions, and setting the correct `sdkVersion` in `app.json`. See the [versioning guide](https://github.com/react-community/create-react-native-app/blob/master/VERSIONS.md) for up-to-date information about package version compatibility.
+Discuss the components
+======================
 
-## Available Scripts
+Before we start the implementation, let’s make a quick “Thinking in React” excersise. When you start a development project, usually you get some kind of mockups or designs. The first step is to break them down into the components that might be needed in the application.
 
-If Yarn was installed when the project was initialized, then dependencies will have been installed via Yarn, and you should probably use it to run these commands as well. Unlike dependency installation, command running syntax is identical for Yarn and NPM at the time of this writing.
+The best way to identify the components is to think about their responsibility - each component should ideally do one thing. If it does more, it should be split into more specific components.
 
-### `npm start`
+You can also take a look at the data displayed in the app. Each component should present a single piece of data.
 
-Runs your app in development mode.
+I mark the components with rectangles. Let’s give them some meanigful names and discuss their responsibility.
 
-Open it in the [Expo app](https://expo.io) on your phone to view it. It will reload if you save edits to your files, and you will see build errors and logs in the terminal.
+App, the top component, houses all the other components.
 
-Sometimes you may need to reset or clear the React Native packager's cache. To do so, you can pass the `--reset-cache` flag to the start script:
+Timer displays current time measurement.
 
-```
-npm start -- --reset-cache
-# or
-yarn start -- --reset-cache
+ButtonsRow display individual Buttons arranged horizontally.
+
+RoundButton is this circle button component.
+
+Next we’ve got LapsTable - which is a scrollable list of individual Laps.
+
+Each Lap component displays the measurement of a single interval.
+
+1\. Create React Native App
+===========================
+
+We’ve got the components identified, so let’s start the development by creating a project with the Create React Native App tool.
+
+```sh
+create-reacte-native-app StopwatchApp
 ```
 
-#### `npm test`
+I enter the project folder and start the packager:
 
-Runs the [jest](https://github.com/facebook/jest) test runner on your tests.
-
-#### `npm run ios`
-
-Like `npm start`, but also attempts to open your app in the iOS Simulator if you're on a Mac and have it installed.
-
-#### `npm run android`
-
-Like `npm start`, but also attempts to open your app on a connected Android device or emulator. Requires an installation of Android build tools (see [React Native docs](https://facebook.github.io/react-native/docs/getting-started.html) for detailed setup). We also recommend installing Genymotion as your Android emulator. Once you've finished setting up the native build environment, there are two options for making the right copy of `adb` available to Create React Native App:
-
-##### Using Android Studio's `adb`
-
-1. Make sure that you can run adb from your terminal.
-2. Open Genymotion and navigate to `Settings -> ADB`. Select “Use custom Android SDK tools” and update with your [Android SDK directory](https://stackoverflow.com/questions/25176594/android-sdk-location).
-
-##### Using Genymotion's `adb`
-
-1. Find Genymotion’s copy of adb. On macOS for example, this is normally `/Applications/Genymotion.app/Contents/MacOS/tools/`.
-2. Add the Genymotion tools directory to your path (instructions for [Mac](http://osxdaily.com/2014/08/14/add-new-path-to-path-command-line/), [Linux](http://www.computerhope.com/issues/ch001647.htm), and [Windows](https://www.howtogeek.com/118594/how-to-edit-your-system-path-for-easy-command-line-access/)).
-3. Make sure that you can run adb from your terminal.
-
-#### `npm run eject`
-
-This will start the process of "ejecting" from Create React Native App's build scripts. You'll be asked a couple of questions about how you'd like to build your project.
-
-**Warning:** Running eject is a permanent action (aside from whatever version control system you use). An ejected app will require you to have an [Xcode and/or Android Studio environment](https://facebook.github.io/react-native/docs/getting-started.html) set up.
-
-## Customizing App Display Name and Icon
-
-You can edit `app.json` to include [configuration keys](https://docs.expo.io/versions/latest/guides/configuration.html) under the `expo` key.
-
-To change your app's display name, set the `expo.name` key in `app.json` to an appropriate string.
-
-To set an app icon, set the `expo.icon` key in `app.json` to be either a local path or a URL. It's recommended that you use a 512x512 png file with transparency.
-
-## Writing and Running Tests
-
-This project is set up to use [jest](https://facebook.github.io/jest/) for tests. You can configure whatever testing strategy you like, but jest works out of the box. Create test files in directories called `__tests__` or with the `.test` extension to have the files loaded by jest. See the [the template project](https://github.com/react-community/create-react-native-app/blob/master/react-native-scripts/template/App.test.js) for an example test. The [jest documentation](https://facebook.github.io/jest/docs/en/getting-started.html) is also a wonderful resource, as is the [React Native testing tutorial](https://facebook.github.io/jest/docs/en/tutorial-react-native.html).
-
-## Environment Variables
-
-You can configure some of Create React Native App's behavior using environment variables.
-
-### Configuring Packager IP Address
-
-When starting your project, you'll see something like this for your project URL:
-
-```
-exp://192.168.0.2:19000
+```sh
+cd StopwatchApp
+yarn start
 ```
 
-The "manifest" at that URL tells the Expo app how to retrieve and load your app's JavaScript bundle, so even if you load it in the app via a URL like `exp://localhost:19000`, the Expo client app will still try to retrieve your app at the IP address that the start script provides.
+The packager bundles all the source file together. It builds the app and starts the development server.
 
-In some cases, this is less than ideal. This might be the case if you need to run your project inside of a virtual machine and you have to access the packager via a different IP address than the one which prints by default. In order to override the IP address or hostname that is detected by Create React Native App, you can specify your own hostname via the `REACT_NATIVE_PACKAGER_HOSTNAME` environment variable:
+2\. Data Model
+==============
 
-Mac and Linux:
+Now as the app is running and the componentes identified let’s think about the data model that represents the application data. It will be used to develop a static version of the application that renders the user interface. 
 
-```
-REACT_NATIVE_PACKAGER_HOSTNAME='my-custom-ip-address-or-hostname' npm start
-```
+We need a minimal data model at this moment, it will probably evolve over time and go into components state. But now for simplicity we will store is as a constant inside App.js.
 
-Windows:
-```
-set REACT_NATIVE_PACKAGER_HOSTNAME='my-custom-ip-address-or-hostname'
-npm start
-```
-
-The above example would cause the development server to listen on `exp://my-custom-ip-address-or-hostname:19000`.
-
-## Adding Flow
-
-Flow is a static type checker that helps you write code with fewer bugs. Check out this [introduction to using static types in JavaScript](https://medium.com/@preethikasireddy/why-use-static-types-in-javascript-part-1-8382da1e0adb) if you are new to this concept.
-
-React Native works with [Flow](http://flowtype.org/) out of the box, as long as your Flow version matches the one used in the version of React Native.
-
-To add a local dependency to the correct Flow version to a Create React Native App project, follow these steps:
-
-1. Find the Flow `[version]` at the bottom of the included [.flowconfig](.flowconfig)
-2. Run `npm install --save-dev flow-bin@x.y.z` (or `yarn add --dev flow-bin@x.y.z`), where `x.y.z` is the .flowconfig version number.
-3. Add `"flow": "flow"` to the `scripts` section of your `package.json`.
-4. Add `// @flow` to any files you want to type check (for example, to `App.js`).
-
-Now you can run `npm run flow` (or `yarn flow`) to check the files for type errors.
-You can optionally use a [plugin for your IDE or editor](https://flow.org/en/docs/editors/) for a better integrated experience.
-
-To learn more about Flow, check out [its documentation](https://flow.org/).
-
-## Sharing and Deployment
-
-Create React Native App does a lot of work to make app setup and development simple and straightforward, but it's very difficult to do the same for deploying to Apple's App Store or Google's Play Store without relying on a hosted service.
-
-### Publishing to Expo's React Native Community
-
-Expo provides free hosting for the JS-only apps created by CRNA, allowing you to share your app through the Expo client app. This requires registration for an Expo account.
-
-Install the `exp` command-line tool, and run the publish command:
-
-```
-$ npm i -g exp
-$ exp publish
+```js
+const DATA = {
+  timer: 1234567,
+  laps: [ 12345, 23456, 34567, 98765],
+}
 ```
 
-### Building an Expo "standalone" app
+We have the main timer. It displays duration of time. We will store it as a number of milliseconds between starting the timer and now.
 
-You can also use a service like [Expo's standalone builds](https://docs.expo.io/versions/latest/guides/building-standalone-apps.html) if you want to get an IPA/APK for distribution without having to build the native code yourself.
+Next there is a list of laps. We will store them as an array in the very same format - as milliseconds representing invervals.
 
-### Ejecting from Create React Native App
+3\. Static version and App
+==========================
 
-If you want to build and deploy your app yourself, you'll need to eject from CRNA and use Xcode and Android Studio.
+Let’s develop the app now. We will start a static application that renders the user interface based on the data we defined in the previous step. Our app should take the data model and just display it.
 
-This is usually as simple as running `npm run eject` in your project, which will walk you through the process. Make sure to install `react-native-cli` and follow the [native code getting started guide for React Native](https://facebook.github.io/react-native/docs/getting-started.html).
+I start by removing all the semicolons. They are totally optional in JavaScript and for me not using them makes the code more clear and readable. This is a matter of personal preference so just make a choice and stay consistent.
 
-#### Should I Use ExpoKit?
+Next I remove the contents of the App component and import the Component directly to have simpler extends form.
 
-If you have made use of Expo APIs while working on your project, then those API calls will stop working if you eject to a regular React Native project. If you want to continue using those APIs, you can eject to "React Native + ExpoKit" which will still allow you to build your own native code and continue using the Expo APIs. See the [ejecting guide](https://github.com/react-community/create-react-native-app/blob/master/EJECTING.md) for more details about this option.
+Now I modify the style of the App component. Styles in React Native are written with JavaScript. The syntax is similar to CSS but there are some differences - for instance the styles are not inherited by child components.
 
-## Troubleshooting
+I remove justifyContent as I don’t want the content to be centered vertically.
 
-### Networking
+4\. Timer
+=========
 
-If you're unable to load your app on your phone due to a network timeout or a refused connection, a good first step is to verify that your phone and computer are on the same network and that they can reach each other. Create React Native App needs access to ports 19000 and 19001 so ensure that your network and firewall settings allow access from your device to your computer on both of these ports.
+It’s time to implement the Timer component. It will be a functional component that takes a single property - the timer reading.
 
-Try opening a web browser on your phone and opening the URL that the packager script prints, replacing `exp://` with `http://`. So, for example, if underneath the QR code in your terminal you see:
-
-```
-exp://192.168.0.1:19000
-```
-
-Try opening Safari or Chrome on your phone and loading
-
-```
-http://192.168.0.1:19000
+```js
+function Timer({ interval }) {
+  return <Text>{interval}</Text>
+}
 ```
 
-and
+Let’s use it inside the App and pass the data from our data model:
 
+```js
+<Timer interval={DATA.timer}/>
 ```
-http://192.168.0.1:19001
+
+You can see that nothing has changed because the default text color in React Native in black. Let’s add some styling to the Timer:
+
+```js
+  return <Text style={styles.timer}>{interval}</Text>
 ```
 
-If this works, but you're still unable to load your app by scanning the QR code, please open an issue on the [Create React Native App repository](https://github.com/react-community/create-react-native-app) with details about these steps and any other error messages you may have received.
+I change the color to white and make the text bigger. Let’s make it also thinner.
 
-If you're not able to load the `http` URL in your phone's web browser, try using the tethering/mobile hotspot feature on your phone (beware of data usage, though), connecting your computer to that WiFi network, and restarting the packager.
+```js
+  timer: {
+    color: '#FFFFFF',
+    fontSize: 76,
+    fontWeight: '200',
+  },
+```
 
-### iOS Simulator won't open
+I will add some space above the timer by setting top padding property of the App component container style:
 
-If you're on a Mac, there are a few errors that users sometimes see when attempting to `npm run ios`:
+```js
+    paddingTop: 130,
+```
 
-* "non-zero exit code: 107"
-* "You may need to install Xcode" but it is already installed
-* and others
+I could either set the padding inside the App or top margin of the Timer. It’s better when the parrent component arrenges its children. This way we might use the Time in other places of the application.
 
-There are a few steps you may want to take to troubleshoot these kinds of errors:
+The timer looks good, but it renders the interval just as a number of milliseconds. We need to parse it into minutes, seconds and fractions of the second. I will add moment library for that. Moment is the most popular JavaScript library to parse and manipulate dates:
 
-1. Make sure Xcode is installed and open it to accept the license agreement if it prompts you. You can install it from the Mac App Store.
-2. Open Xcode's Preferences, the Locations tab, and make sure that the `Command Line Tools` menu option is set to something. Sometimes when the CLI tools are first installed by Homebrew this option is left blank, which can prevent Apple utilities from finding the simulator. Make sure to re-run `npm/yarn run ios` after doing so.
-3. If that doesn't work, open the Simulator, and under the app menu select `Reset Contents and Settings...`. After that has finished, quit the Simulator, and re-run `npm/yarn run ios`.
+```sh
+yarn add moment
+```
 
-### QR Code does not scan
+I import it:
 
-If you're not able to scan the QR code, make sure your phone's camera is focusing correctly, and also make sure that the contrast on the two colors in your terminal is high enough. For example, WebStorm's default themes may [not have enough contrast](https://github.com/react-community/create-react-native-app/issues/49) for terminal QR codes to be scannable with the system barcode scanners that the Expo app uses.
+```sh
+import moment from 'moment'
+```
 
-If this causes problems for you, you may want to try changing your terminal's color theme to have more contrast, or running Create React Native App from a different terminal. You can also manually enter the URL printed by the packager script in the Expo app's search bar to load it manually.
+…and use it to parse the milliseconds:
+
+```sh
+function Timer({ interval }) {
+  const duration = moment.duration(interval)
+  return (
+    <Text style={styles.timer}>
+      {duration.minutes()}:{duration.seconds()},{duration.milliseconds()}
+    </Text>
+  )
+}
+```
+
+Looks good, but I only want two decimal places after number of seconds. I devide number of milliseconds by 10 and then I need to round it:
+
+```sh
+function Timer({ interval }) {
+  const duration = moment.duration(interval)
+  const centiseconds = Math.floor(duration.milliseconds() / 10)
+  return (
+    <Text style={styles.timer}>
+      {duration.minutes()}:{duration.seconds()},{centiseconds}
+    </Text>
+  )
+}
+```
+
+Now the Timer component is done!
+
+5\. RoundButton
+===============
+
+In this step we will display a row with two buttons. Let’s start with a single button. It will be implemented as a RoundButton functional component.
+
+```js
+function RoundButton() {
+  return (
+    <View>
+
+    </View>
+  )
+}
+```
+
+It has three properties: a title, a text color and a background color.
+
+```js
+function RoundButton({ title, color, background }) {
+```
+
+Title is displayed as a Text component. Color is passed as in inline style to it. Background is passed to the View.
+
+```js
+<View style={{ backgroundColor: background }}>
+  <Text style={{ color }}>{title}</Text>
+</View>
+```
+
+Let’s display the button below the Timer. I pick the colors from the Start button.
+
+```js
+<RoundButton color='#53D86A' background='#1B361F' title='Start'/>
+```
+
+Let’s ass some basic styling to make the button. I place it in square brackets to make it work together with the background color I set inline.
+
+```js
+<View style={[styles.button, { backgroundColor: background }]}>
+```
+
+Now I define generic round button style. Let’s make it 80 by 80\. To make it round I set border radius to 40 - half of its size. I need to center the title.
+
+```js
+button: {
+  width: 80,
+  height: 80,
+  borderRadius: 40,
+  alignItems: 'center',
+  justifyContent: 'center',
+}
+```
+
+Let’s make the text bigger.
+
+\<Text style={[styles.buttonTitle, { color }]}\>{title}\</Text\>
+
+and then
+
+buttonTitle: {
+
+ fontSize: 18,
+
+ }
+
+Now I will implement the thin border inside the button. It will be another View component inside the button.
+
+```js
+<View style={[styles.button, { backgroundColor: background }]}>
+  <View style={styles.buttonBorder}>
+    <Text style={[styles.buttonTitle, { color }]}>{title}</Text>
+  </View>
+</View>
+```
+
+Let’s style it. I make it just a bit smaller than the whole button - 76 by 76\. Border radius is half of the size. I set tbe border color to the same value as the background color of the whole app and border width as 2.
+
+I also need to center the title inside this view.
+
+```js
+<View style={styles.buttonBorder}>
+...
+  buttonBorder: {
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    borderColor: '#0D0D0D',
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+```
+
+The basic button component is ready. 
+
+6\. ButtonsRow
+==============
+
+Let’s try to display the Reset button left to the Start button just like on the screen. I pick the colors from the screen again:
+
+```js
+<RoundButton color='#FFFFFF' background='#3D3D3D' title='Reset'/>
+```
+
+The buttons are displayed one below the other. I need to put them inside their own container component that will arrange the buttons horizontaly. I call it ButtonsRow. Its row is to arrange its children horizontally.
+
+```js
+function ButtonsRow({ children }) {
+  return (
+    <View style={styles.buttonsRow}>
+      {children}
+    </View>
+  )
+}
+```
+
+I will surround Buttons with it now.
+
+```js
+<ButtonsRow>
+  <RoundButton color='#53D86A' background='#1B361F' title='Start'/>
+  <RoundButton color='#FFFFFF' background='#3D3D3D' title='Reset'/>
+</ButtonsRow>
+```
+
+Now let’s define buttonsRow style. I set flexDirection to row and set justifyContent to space-between so that the buttons are spread to the sides of the screen. I also need to set alignSelf to stretch so that the ButtonsRow component takes whole available space. I add some space above the buttons by setting the top margin.
+
+buttonsRow: {
+
+ flexDirection: 'row',
+
+ alignSelf: 'stretch',
+
+ justifyContent: 'space-between’,
+
+ marginTop: 80,
+
+ },
+
+The final thing to do is to add the horizontal padding to the App component so that there is some space around the buttons.
+
+```js
+  container: {
+    ...
+    paddingHorizontal: 20,
+  },
+```
+
+7\. LapsTable
+=============
+
+In the next step I will display the laps. Let’s define a components for laps table and for an individual lap.
+
+I start with the Lap. It takes two properties - lap number and its duration.
+
+```js
+function Lap({ number, interval }) {
+  return (
+    <View>
+      <Text>Lap {number}</Text>
+      <Text>{interval}</Text>
+    </View>
+  )
+}
+```
+
+Next goes the LapsTable component. I start by wrapping the contents with the ScrollView so that it will be possible to browse the laps f they don’t fit the screen. I map elements inside the laps array into Lap elements. Interval is lap duration in milliseconds.
+
+I assume that the current lap is at position 0 while the first lap is at the very end of the laps array. It will make displaying the laps in the descending order easier. I calculate the lap number by subtracting lap index inside the laps array from the total number of laps. The number identifies the lap uniquely so I use it as a key.
+
+```js
+import { StyleSheet, Text, View, ScrollView } from 'react-native'
+...
+function LapsTable({ laps }) {
+  return (
+    <ScrollView>
+      {laps.map((lap, index) => (
+        <Lap
+          interval={lap}
+          number={laps.length - index}
+          key={laps.length - index}
+        />
+      ))}
+    </ScrollView>
+  )
+}
+```
+
+Let’s style the LapsTable and Lap components now and add basic style:
+
+```js
+  lap: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  lapText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+  }
+```
+
+The number and duration are crunched. I need to stretch the ScrollView acroll the screen.
+
+```js
+<ScrollView style={styles.scrollView}>
+...
+  scrollView: {
+    alignSelf: 'stretch',
+  },
+```
+
+Let’s add the border between the elements. Is it enough to add the top border. I pick its color from our screenshots.The laps are confined. I will add vertical padding.
+
+```js
+  lap: {
+    borderTopWidth: 1,
+    borderColor: '#171717',
+    paddingVertical: 10,
+```
+
+Let’s also add some space below the buttons.
+
+```js
+  buttonsRow: {
+    ...
+    marginBottom: 20,
+  },
+```
+
+We have two more things to do with implementing the laps: parse the interval duration and highlighting the fastest and the slowest lap.
+
+For laps duration we could reuse the Timer component. It does exaclty the same, only has different style. Lets make the style a parameter of the Timer component:
+
+```js
+function Timer({ interval, style = { }}) {
+  const duration = moment.duration(interval)
+  const centiseconds = Math.floor(duration.milliseconds() / 10)
+  return (
+    <Text style={style}>
+```
+
+Now I can use the Timer directly inside the Lap component. Style remains unchanged - I still want to pass it to the timer. The only difference is that interval is now passed as a property:
+
+```js
+      <Text style={styles.lapText}>Lap {number}</Text>
+      <Timer style={styles.lapText} interval={interval}/>
+```
+
+To highlight the fastest and the slowest lap, I will add two new properties to the lap component: fastest and slowest:
+
+```js
+function Lap({ number, interval, fastest, slowest }) {
+```
+
+I will pick the colors from the design and create correposnding styles.
+
+```css
+  fastest: {
+    color: '#90D970',
+  },
+  slowest: {
+    color: '#D04F38',
+  },
+```
+
+They will be aplpied conditionally if the corresponding property is true. I exctract lap style into a constant and apply the logic. The Lap component is ready now.
+
+```js
+function Lap({ number, interval, fastest, slowest }) {
+  const lapStyle = [
+    styles.lapText,
+    fastest && styles.fastest,
+    slowest && styles.slowest,
+  ]
+  return (
+    <View style={styles.lap}>
+      <Text style={lapStyle}>Lap {number}</Text>
+      <Timer style={lapStyle} interval={interval}/>
+    </View>
+  )
+}
+```
+
+Now I ill find these laps inside LapsTable component. I start by extracting all the lap but the first one. The slice method returns a copy of the original laps array, starting from the first element to the end, without modifying the original laps array.
+
+```js
+  const finishedLaps = laps.slice(1)
+```
+
+I set the initial values for min and max. Min is set to the max Integer number in JavaScript to ensure that at least one min lap will be find. Max is set to the minimum integer number.
+
+```js
+  let min = Number.MAX_SAFE_INTEGER
+  let max = Number.MIN_SAFE_INTEGER
+```
+
+If there are at least two finished laps I will fo through them and pick the fastest and the slowest one.
+
+```js
+  if (finishedLaps.length >= 2) {
+    finishedLaps.forEach(lap => {
+      if (lap < min) min = lap
+      if (lap > max) max = lap
+    })
+  }
+```
+
+8\. Design State
+================
+
+We are ready now to handle user actions now. The first step will be to design UI state. In React we use component state to control the data that changes over time. It is important to identify which components owns that data. Usually it is the top level component that passes the data to its children components as props. In our case data will owned be the App component.
+
+I start by migrating the data model into App component state. The initial state values are defined inside component constructor.
+
+```js
+  constructor(props) {
+    super(props)
+    this.state = {
+      timer: 1234567,
+      laps: [ 12345, 23456, 34567, 98765],
+    }
+  }
+```
+
+What should happen then the Start button is pressed? The stopwatch start measuring the time. To calculate the duration I neede to store the time when the measuring it starts. I add the start property to the state and assume initial value of 0\. It will represent the stopwatch not measuing the time in the very moment.
+
+To calculate the duration I also need the current time. Let’s call it now. I put it into state to triggerr the app re-render when the value updates. When I substract start from now I get the timer duration. I don’t need a separate timer property. I also make the laps array empty as we have no laps when the app starts.
+
+```js
+  constructor(props) {
+    super(props)
+    this.state = {
+      laps: [ ],
+      start: 0,
+      now: 0,
+    }
+  }
+```
+
+start and now will be represented as a number of milliseconds since the Empoch time, which is January 1st 1970\. This is what getTime method of the Date object returns in JavaScript .
+
+9\. Start
+=========
+
+Now when the state is ready handling the button actions is easy.
+
+I definede the start class field - it represents the handler function. I pass it as the property to the Start button. I also and the Lap button and comment out the Reset button - we don’t need it now. The Lap button should be disabled when the timer is not running. I don’t want it to handle any events or change opacity when pressed. This will be handled by the disabled property.
+
+```js
+  start = () => {
+  
+  }
+  ...
+  <RoundButton color='#FFFFFF' background='#3D3D3D' title='Reset'/>
+  <RoundButton color='#53D86A' background='#1B361F' title='Start' onPress={this.start}/>
+```
+
+I use TouchableOpacity to render the RoundButton. I add onPress and disabled properties to the Round Button. onPress is passed to the TouchableOpacity, which can handle it.
+
+I also increase the default initial opacity. The final step is to handle disabled property.
+
+If a button is disabled, it’s opacity is always 1\. If this is the case, onPress callback should not be executed.
+
+```js
+function RoundButton({ title, color, background, onPress, disabled }) {
+  return (
+    <TouchableOpacity
+      style={[styles.button, { backgroundColor: background }]}
+      onPress={() => !disabled && onPress()}
+      activeOpacity={disabled ? 1 : 0.7}
+    >
+      <View style={styles.buttonBorder}>
+        <Text style={[styles.buttonTitle, { color }]}>{title}</Text>
+      </View>
+    </TouchableOpacity>
+  )
+}
+```
+
+Let’s get back to the start method. I set the current timestamp and set state.start and state.now with it and create a single empty lap:
+
+const now = new Date().getTime()
+
+ this.setState({
+
+ laps: [0],
+
+ start: now,
+
+ now,
+
+ })
+
+Still nothing really happens as I the timer should be updated on a continuous basis. I will use setInterval function to update state.now property:
+
+```js
+    this.timer = setInterval(() => { 
+      this.setState({
+        now: new Date().getTime()
+      })
+    }, 100)
+```
+
+Let’s make the lap updated. I will add the current timer to the first lap. First I create a constant for timer interval and pass it to the LapsTable and the Timer.
+
+```js
+const timer = now - start
+...
+<Timer interval={timer} style={styles.timer}/>
+...
+<LapsTable laps={laps} timer={timer}/>
+```
+
+I update the LapsTable:
+
+```js
+function LapsTable({ laps, timer }) {
+...
+interval={index === 0 ? timer + lap : lap}
+```
+
+You can notice that the timer jumps left and right. This is becase the font that we use is not monospaces - digits have different width. Also if any of the timer parts is less than 10 we should add a leading zero. Let’s defined the pad function:
+
+```js
+const pad = n => n < 10 ? '0' + n : n
+```
+
+To fix the Timer I will wrap minutes, seconds and centiseconds with their own Text components with fixed width. The whole timer is placed inside a View that has flexDirection set to row. Now the style is applied to each element.
+
+```js
+    <View style={styles.timerContainer}>
+      <Text style={style}>{pad(duration.minutes())}:</Text>
+      <Text style={style}>{pad(duration.seconds())},</Text>
+      <Text style={style}>{pad(centiseconds)}</Text>
+    </View>
+    ...
+  timerContainer: {
+    flexDirection: 'row',
+  },
+```
+
+The last thing to do is to set the width for the lap timer the same as we did for the main timer:
+
+```js
+<Timer style={[styles.lapPart, lapStyle]} interval={interval}/>
+...
+lapPart: {
+    width: 28,
+  },
+```
+
+9\. Lap & Stop
+==============
+
+When the timer is running, there is a different set of buttons rendered. Let’s create a ButtonRow for them. The Lap button looks just like the Reset button, so I reuse it. For the Stop button I pick the colors from the designs.
+
+```js
+        <ButtonsRow>
+          <RoundButton color='#FFFFFF' background='#3D3D3D' title='Lap' onPress={this.lap}/>
+          <RoundButton color='#CE4F39' background='#341915' title='Stop' onPress={this.stop}/>
+        </ButtonsRow>
+```
+
+The first row should be rendered only when the app starts and no button has been pressed. It happens only when the laps array is emty. I will render this row conditionally:
+
+```js
+{laps.length === 0 && (
+...
+)}
+```
+
+The Lap and Stop buttons are present when the timer is running - that is state.start property is \> 0
+
+```js
+{start > 0 && (
+```
+
+Now let’s implement the handler methods. When the lap is pressed I insert a new lap at the first position of the state.laps array:
+
+lap = () =\> {
+
+ const { laps } = this.state
+
+ this.setState({
+
+ laps: [0, ...laps]
+
+ })
+
+ }
+
+This does not save current split time. I should first save the current timer value into the laps array. I also need to reset start and now with current timestamp value so that the new lap counts from 0.
+
+```js
+  lap = () => {
+    const timestamp = new Date().getTime()
+    const { laps, now, start } = this.state
+    const [firstLap, ...other] = laps
+    this.setState({
+      laps: [0, firstLap + now - start, ...other],
+      start: timestamp,
+      now: timestamp,
+    })
+  }
+```
+
+Looks good with the only exception that the main timer alco counts from 0 again. I shall add the duration of previous laps to have the total time displayed.
+
+\<Timer interval={laps.reduce((total, curr) =\> total + curr, 0) + timer} style={styles.timer}/\>
+
+The stop method is similar to the lap. I will copy it. First I clear the interval so that it no longer runs.
+
+When stop is pressed I want to freeze the timer. I can do it be setting state now and start proeprties to 0s. I also don’t add a new lap. Instead I add the value of the current timer reading to the first tap.
+
+Each time stop is pressed, start and now are zeroed and current lap is updated.
+
+```js
+  stop = () => {
+    clearInterval(this.timer)
+    const { laps, now, start } = this.state
+    const [firstLap, ...other] = laps
+    this.setState({
+      laps: [firstLap + now - start, ...other],
+      start: 0,
+      now: 0,
+    })
+  }
+```
+
+11\. Reset & Resume
+===================
+
+Rest and Resume buttons are displayed in situation, when we’ve got some laps in the state.lap array but the timer is stopped.
+
+```js
+        {laps.length > 0 && start === 0 && (
+          <ButtonsRow>
+          <RoundButton color='#FFFFFF' background='#3D3D3D' title='Reset' onPress={this.reset}/>
+            <RoundButton color='#53D86A' background='#1B361F' title='Start' onPress={this.resume}/>
+          </ButtonsRow>
+        )}
+```
+
+Reset clears the state to its initial value
+
+```js
+  reset = () => {
+    this.setState({
+      laps: [],
+      started: 0,
+      now: 0,
+    })
+  }
+```
+
+Resume sets state and now to current timestamp and starts the timer again.
+
+```js
+  resume = () => {
+    const now = new Date().getTime()
+    this.setState({
+      start: now,
+      now,
+    })
+    this.timer = setInterval(() => { 
+      this.setState({
+        now: new Date().getTime()
+      })
+    }, 100)
+  }
+```
+
+The last thing to do is to clear the timer when the App component unmounts so that all allocated resources are released.
+
+componentWillUnmount() {
+
+ this.clearInterval(this.timer)
+
+ }
+
+12\. Android
+============
+
+The app can be easily run on Android.
+
+13\. Summary
+============
+
+Well done - if you followed me along, you’ve got a stopwatch app running now! 
+
+Lets wrap up everything. We started with the static designs and broke them down into static omponents. Based on that we implemented the user interface of the app. Next we designed the application state and handled interactions.
+
+That’s quite a lot, but there is so much more to learn about React Native. We used only the most basic components, didn’t use any animations and there is no navigation since the whole app is a single screen. When you work on a real app you also implement autoamted tests and use continuous integration to run them. We haven’t touch app releases and updated.
+
+If you want to learn all of the above and get a small group React Native coaching join the React Native Academy at reactnative.education.
+
